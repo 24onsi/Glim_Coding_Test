@@ -1,0 +1,21 @@
+#include <string>
+
+using namespace std;
+
+int solution(int a, int b) 
+{
+    int answer = 0;
+    string str_answer1 = to_string(a) + to_string(b);
+    string str_answer2 = to_string(b) + to_string(a);
+
+    if (stoi(str_answer1) > stoi(str_answer2))
+    {
+        answer = stoi(str_answer1);
+    }
+    else
+    {
+        answer = stoi(str_answer2);
+    }
+
+    return answer;
+}

@@ -1,0 +1,19 @@
+#include <iostream>
+#include <string>
+
+# define Lamp 12000
+# define Drink 2000
+
+int solution(int n, int k);
+
+int solution(int n, int k)
+{
+    int answer = 0;
+    int Service_drink = n / 10;
+
+    k -= Service_drink;
+
+    answer = (n * Lamp) + (k * Drink);
+
+    return answer;
+}
