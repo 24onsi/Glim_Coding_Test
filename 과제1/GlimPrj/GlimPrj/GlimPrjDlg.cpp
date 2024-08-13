@@ -417,6 +417,12 @@ void CGlimPrjDlg::PrintCenterPos(int nCenterX, int nCenterY)
 	}
 
 	DisplayImage();
+
+	CClientDC dc(this);
+	CString strCenterXY;
+	strCenterXY.Format(_T("(%d, %d)"), nCenterX, nCenterY);
+	dc.TextOutW(nCenterX - 30, nCenterY + 20, strCenterXY);
+	
 }
 
 
