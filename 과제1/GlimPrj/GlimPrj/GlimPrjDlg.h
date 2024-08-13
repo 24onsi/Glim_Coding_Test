@@ -1,4 +1,4 @@
-﻿
+
 // GlimPrjDlg.h: 헤더 파일
 //
 
@@ -15,6 +15,9 @@ private:
 	int m_nEndX;
 	int m_nEndY;
 	int m_nRadius;
+	bool m_bCheckDraw;
+
+	CWinThread* m_pActionThread = NULL;
 
 public:
 	CGlimPrjDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
@@ -42,6 +45,7 @@ protected:
 
 	
 public:
+
 	afx_msg void OnBnClickedBtnDraw();
 	afx_msg void OnBnClickedBtnAction();
 	afx_msg void OnBnClickedBtnOpen();
@@ -54,5 +58,7 @@ public:
 	void PrintCenterPos(int nCenterX, int nCenterY);
 	CString CheckFolderCreate();
 	void EditControlSetZero();
+	static UINT ThreadAction(LPVOID _mothod);
 
+	afx_msg void OnDestroy();
 };
