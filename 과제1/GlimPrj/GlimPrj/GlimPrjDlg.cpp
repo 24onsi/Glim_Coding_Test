@@ -1,4 +1,4 @@
-﻿
+
 // GlimPrjDlg.cpp: 구현 파일
 //
 
@@ -76,6 +76,7 @@ BEGIN_MESSAGE_MAP(CGlimPrjDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_DRAW, &CGlimPrjDlg::OnBnClickedBtnDraw)
 	ON_BN_CLICKED(IDC_BTN_ACTION, &CGlimPrjDlg::OnBnClickedBtnAction)
 	ON_BN_CLICKED(IDC_BTN_OPEN, &CGlimPrjDlg::OnBnClickedBtnOpen)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -111,6 +112,7 @@ BOOL CGlimPrjDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	m_bCheckDraw = false;
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -223,6 +225,12 @@ void CGlimPrjDlg::OnBnClickedBtnDraw()
 
 	if (bCheckPos)
 	{
+		if (m_pActionThread != NULL)
+		{
+			SuspendThread(m_pActionThread->m_hThread);
+		}
+
+
 		if (m_Image != NULL)
 		{
 			m_Image.Destroy();
@@ -356,40 +364,53 @@ void CGlimPrjDlg::MakeCircleImage(unsigned char* fm, int nX, int nY)
 }
 
 
+UINT CGlimPrjDlg::ThreadAction(LPVOID _mothod)
+{
+	CGlimPrjDlg* pDlg = (CGlimPrjDlg*)_mothod;
+
+	int nX = pDlg->m_nStartX;
+	int nY = pDlg->m_nStartY;
+
+	int nWidth = pDlg->m_Image.GetWidth();
+	int nHeight = pDlg->m_Image.GetHeight();
+	int nPitch = pDlg->m_Image.GetPitch();
+
+	int nBlack = 0000;
+	unsigned char* fm = (unsigned char*)pDlg->m_Image.GetBits();
+
+	while (1)
+	{
+		memset(fm, nBlack, nWidth * nHeight);
+		pDlg->MakeCircleImage(fm, nX, nY);
+
+		Sleep(10);
+
+		if (nX != pDlg->m_nEndX)
+		{
+			(nX > pDlg->m_nEndX ? --nX : ++nX);
+		}
+		if (nY != pDlg->m_nEndY)
+		{
+			(nY > pDlg->m_nEndY ? --nY : ++nY);
+		}
+		if (nX == pDlg->m_nEndX && nY == pDlg->m_nEndY)
+			break;
+	}
+
+	pDlg->m_Image.Destroy();
+	pDlg->EditControlSetZero();
+
+	return 0;
+}
+
+
 void CGlimPrjDlg::OnBnClickedBtnAction()
 {
 	if (m_Image != NULL)
 	{
-		int nX = m_nStartX;
-		int nY = m_nStartY;
-
-		int nWidth = m_Image.GetWidth();
-		int nHeight = m_Image.GetHeight();
-		int nPitch = m_Image.GetPitch();
-
-		int nBlack = 0000;
-		unsigned char* fm = (unsigned char*)m_Image.GetBits();
-
-		while (1)
-		{
-			memset(fm, nBlack, nWidth * nHeight);
-			MakeCircleImage(fm, nX, nY);
-			Sleep(10);
-
-			if (nX != m_nEndX)
-			{
-				(nX > m_nEndX ? --nX : ++nX);
-			}
-			if (nY != m_nEndY)
-			{
-				(nY > m_nEndY ? --nY : ++nY);
-			}
-			if (nX == m_nEndX && nY == m_nEndY)
-				break;
-		}
-
-		m_Image.Destroy();
-		EditControlSetZero();
+		m_pActionThread = AfxBeginThread(ThreadAction, this);
+		if (m_pActionThread == NULL)
+			AfxMessageBox(_T("스레드 생성 실패"));
 	}
 	else
 	{
@@ -422,7 +443,7 @@ void CGlimPrjDlg::PrintCenterPos(int nCenterX, int nCenterY)
 	CString strCenterXY;
 	strCenterXY.Format(_T("(%d, %d)"), nCenterX, nCenterY);
 	dc.TextOutW(nCenterX - 30, nCenterY + 20, strCenterXY);
-	
+
 }
 
 
@@ -436,6 +457,11 @@ void CGlimPrjDlg::OnBnClickedBtnOpen()
 
 	if (IDOK == filedlg.DoModal())
 	{
+		if (m_pActionThread != NULL)
+		{
+			SuspendThread(m_pActionThread->m_hThread);
+		}
+
 		CString strFilePath = filedlg.GetPathName();
 		CString strFileName = filedlg.GetFileName();
 
@@ -464,3 +490,13 @@ void CGlimPrjDlg::OnBnClickedBtnOpen()
 		m_Image.Destroy();
 	}
 }
+
+void CGlimPrjDlg::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+
+	delete m_pActionThread;
+	m_pActionThread = NULL;
+	m_Image.Destroy();
+}
+
