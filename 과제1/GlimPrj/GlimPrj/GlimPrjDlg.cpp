@@ -203,9 +203,9 @@ bool CGlimPrjDlg::CheckGetPosXY()
 
 		return false;
 	}
-	else if (m_nStartX >= 800 || m_nStartY >= 800 || m_nEndX >= 800 || m_nEndY >= 800)
+	else if (m_nStartX >= 601 || m_nStartY >= 601 || m_nEndX >= 601 || m_nEndY >= 601)
 	{
-		MessageBox(_T("입력 좌표의 범위는 0 ~ 800 사이로 입력해주세요."),
+		MessageBox(_T("입력 좌표의 범위는 0 ~ 600 사이로 입력해주세요."),
 			_T("안내 메시지"), MB_ICONASTERISK);
 
 		EditControlSetZero();
